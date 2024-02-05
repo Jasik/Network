@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol HTTPRequest {
+public protocol HTTPRequest {
     associatedtype Response: Decodable
     
     var baseURL: URL? { get }
@@ -22,17 +22,14 @@ protocol HTTPRequest {
     func parse(data: Data, response: HTTPURLResponse) throws -> Response
 }
 
-extension HTTPRequest where Response: Decodable {
-    var baseURL: URL {
-        .baseUrl
-    }
+public extension HTTPRequest where Response: Decodable {
     
     var method: HTTPMethod {
         .get
     }
     
     var headerFields: HTTPHeaderFields? {
-        nil
+        .defaultHeaders()
     }
     
     var contentType: HTTPContentType {

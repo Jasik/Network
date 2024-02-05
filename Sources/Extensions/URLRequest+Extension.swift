@@ -8,7 +8,7 @@
 import Foundation
 
 public extension URLRequest {
-    mutating func setHTTPBody(from parameter: [String: Any]?) {
+    public func setHTTPBody(from parameter: [String: Any]?) {
         guard
             let parameter = parameter,
             let httpBody = try? JSONSerialization.data(withJSONObject: parameter, options: [])

@@ -7,20 +7,20 @@
 
 import Foundation
 
-protocol HTTPClient {
+public protocol HTTPClient {
     func send<Request: HTTPRequest>(_ request: Request, completion: @escaping (Result<Request.Response, HTTPError>) -> Void)
 }
 
-struct URLSessionHTTPClient: HTTPClient {
+public struct URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
     private let builder: URLRequestBuilder
 
-    init(session: URLSession = .shared, builder: URLRequestBuilder = URLRequestBuilder()) {
+    public init(session: URLSession = .shared, builder: URLRequestBuilder = URLRequestBuilder()) {
         self.session = session
         self.builder = builder
     }
 
-    func send<Request: HTTPRequest>(_ request: Request, completion: @escaping (Result<Request.Response, HTTPError>) -> Void) {
+    public func send<Request: HTTPRequest>(_ request: Request, completion: @escaping (Result<Request.Response, HTTPError>) -> Void) {
         guard let urlRequest = builder.build(from: request) else {
             completion(.failure(.invalidRequest))
             return

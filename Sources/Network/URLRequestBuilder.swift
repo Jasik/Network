@@ -7,9 +7,11 @@
 
 import Foundation
 
-struct URLRequestBuilder {
+public struct URLRequestBuilder {
     
-    func build<Request: HTTPRequest>(from request: Request) -> URLRequest? {
+    public init() {}
+    
+    public func build<Request: HTTPRequest>(from request: Request) -> URLRequest? {
         
         guard let baseURL = request.baseURL else {
             return nil
@@ -33,12 +35,10 @@ struct URLRequestBuilder {
         
         var urlRequest = URLRequest(url: url)
         
-        var allHTTPHeaderFields = request.headerFields?.toDictionary() ?? [:]
-        allHTTPHeaderFields[HTTPHeaderFields.contentType] = request.contentType.rawValue
-        
-        urlRequest.allHTTPHeaderFields = allHTTPHeaderFields
+        urlRequest.allHTTPHeaderFields = request.headerFields.toDictionary()
         urlRequest.httpMethod = request.method.rawValue
-        urlRequest.setHTTPBody(from: request.bodyParameter)
+        
+//        urlRequest.setHTTPBody(from: request.bodyParameter)
         
         return urlRequest
     }

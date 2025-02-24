@@ -7,15 +7,19 @@
 
 import Foundation
 
+public struct EmptyParameters: Encodable {}
+
 public protocol HTTPRequest {
     associatedtype Response: Decodable
+    associatedtype Query: Encodable = EmptyParameters
+    associatedtype Body: Encodable = EmptyParameters
     
     var baseURL: URL? { get }
     var path: String { get }
     var method: HTTPMethod { get }
     var headerFields: HTTPHeaderFields { get }
-    var queryParameters: [String: Any?]? { get }
-    var bodyParameters: [String: Any]? { get }
+    var query: Query? { get }
+    var body: Body? { get }
     
     var decoder: JSONDecoder { get }
     
@@ -28,19 +32,15 @@ public extension HTTPRequest where Response: Decodable {
         .get
     }
     
-    var headerFields: HTTPHeaderFields? {
+    var headerFields: HTTPHeaderFields {
         .defaultHeaders()
     }
     
-    var contentType: HTTPContentType {
-        .applicationJSON
-    }
-    
-    var queryParameter: [String : Any?]? {
+    var query: Query? {
         nil
     }
     
-    var bodyParameter: [String : Any]? {
+    var body: Body? {
         nil
     }
     

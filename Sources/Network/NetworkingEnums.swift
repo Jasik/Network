@@ -20,4 +20,9 @@ public enum HTTPContentType: String {
     case textPlain = "text/plain"
 }
 
+public enum HTTPHeaderKey: String {
+    case contentType = "Content-Type"
+    case accept = "Accept"
+    case acceptEncoding = "Accept-Encoding"
+    case cacheControl = "Cache-Control"
 }

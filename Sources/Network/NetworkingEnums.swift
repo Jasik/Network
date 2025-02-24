@@ -13,4 +13,11 @@ public enum HTTPMethod: String {
 
 public enum HTTPContentType: String {
     case applicationJSON = "application/json"
+    case textHTML = "text/html"
+    case applicationXML = "application/xml"
+    case multipartFormData = "multipart/form-data"
+    case urlEncoded = "application/x-www-form-urlencoded"
+    case textPlain = "text/plain"
+}
+
 }

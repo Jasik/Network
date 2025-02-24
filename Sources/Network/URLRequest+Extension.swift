@@ -8,13 +8,8 @@
 import Foundation
 
 public extension URLRequest {
-    public func setHTTPBody(from parameter: [String: Any]?) {
-        guard
-            let parameter = parameter,
-            let httpBody = try? JSONSerialization.data(withJSONObject: parameter, options: [])
-        else {
-            return
-        }
-        self.httpBody = httpBody
+    mutating func setHTTPBody<Body: Encodable>(from body: Body?) {
+        guard let body = body else { return }
+        self.httpBody = try? JSONEncoder().encode(body)
     }
 }

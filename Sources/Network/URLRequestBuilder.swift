@@ -7,6 +7,16 @@
 
 import Foundation
 
+private func dictionaryFromEncodable<T: Encodable>(_ value: T) -> [String: Any]? {
+    guard
+        let data = try? JSONEncoder().encode(value),
+        let dictionary = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
+    else {
+        return nil
+    }
+    return dictionary
+}
+
 public struct URLRequestBuilder {
     
     public init() {}
@@ -22,23 +32,22 @@ public struct URLRequestBuilder {
             resolvingAgainstBaseURL: false
         )
         
-        urlComponents?.queryItems = request
-            .queryParameters?
-            .compactMapValues { $0 }
-            .compactMap { name, value in
-                URLQueryItem(name: name, value: "\(value)")
+        if let query = request.query, !(query is EmptyParameters),
+           let queryDict = dictionaryFromEncodable(query) {
+            urlComponents?.queryItems = queryDict.compactMap { (key, value) -> URLQueryItem? in
+                guard let convertible = value as? CustomStringConvertible else { return nil }
+                return URLQueryItem(name: key, value: convertible.description)
             }
+        }
         
         guard let url = urlComponents?.url else {
             return nil
         }
         
         var urlRequest = URLRequest(url: url)
-        
         urlRequest.allHTTPHeaderFields = request.headerFields.toDictionary()
         urlRequest.httpMethod = request.method.rawValue
-        
-        urlRequest.setHTTPBody(from: request.bodyParameters)
+        urlRequest.setHTTPBody(from: request.body)
         
         return urlRequest
     }

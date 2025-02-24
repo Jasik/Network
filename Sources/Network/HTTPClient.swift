@@ -27,11 +27,21 @@ public struct URLSessionHTTPClient: HTTPClient {
         }
         
         let task = session.dataTask(with: urlRequest) { data, response, error in
-            guard let httpResponse = response as? HTTPURLResponse, let data = data, error == nil else {
-                completion(.failure(.networkError(error!)))
+            if let error = error {
+                completion(.failure(.networkError(error)))
                 return
             }
-
+            
+            guard let httpResponse = response as? HTTPURLResponse, let data = data else {
+                completion(.failure(.failedConnect))
+                return
+            }
+            
+            guard (200...299).contains(httpResponse.statusCode) else {
+                completion(.failure(.badHTTPStatus(httpResponse.statusCode)))
+                return
+            }
+            
             do {
                 let result = try request.parse(data: data, response: httpResponse)
                 completion(.success(result))

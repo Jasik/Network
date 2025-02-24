@@ -28,7 +28,7 @@ public extension HTTPRequest where Response: Decodable {
         .get
     }
     
-    var headerFields: HTTPHeaderFields? {
+    var headerFields: HTTPHeaderFields {
         .defaultHeaders()
     }
     
@@ -36,11 +36,11 @@ public extension HTTPRequest where Response: Decodable {
         .applicationJSON
     }
     
-    var queryParameter: [String : Any?]? {
+    var queryParameters: [String : Any?]? {
         nil
     }
     
-    var bodyParameter: [String : Any]? {
+    var bodyParameters: [String : Any]? {
         nil
     }
     

@@ -23,7 +23,7 @@ public struct URLRequestBuilder {
         )
         
         urlComponents?.queryItems = request
-            .queryParameter?
+            .queryParameters?
             .compactMapValues { $0 }
             .compactMap { name, value in
                 URLQueryItem(name: name, value: "\(value)")
@@ -38,7 +38,7 @@ public struct URLRequestBuilder {
         urlRequest.allHTTPHeaderFields = request.headerFields.toDictionary()
         urlRequest.httpMethod = request.method.rawValue
         
-//        urlRequest.setHTTPBody(from: request.bodyParameter)
+        urlRequest.setHTTPBody(from: request.bodyParameters)
         
         return urlRequest
     }

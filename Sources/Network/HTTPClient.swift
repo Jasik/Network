@@ -9,6 +9,7 @@ import Foundation
 
 public protocol HTTPClient {
     func send<Request: HTTPRequest>(_ request: Request, completion: @escaping (Result<Request.Response, HTTPError>) -> Void)
+    func send<Request: HTTPRequest>(_ request: Request) async -> Result<Request.Response, HTTPError>
 }
 
 public struct URLSessionHTTPClient: HTTPClient {
@@ -66,5 +67,39 @@ public struct URLSessionHTTPClient: HTTPClient {
             }
         }
         task.resume()
+    }
+    
+    public func send<Request: HTTPRequest>(_ request: Request) async -> Result<Request.Response, HTTPError> {
+        guard let urlRequest = builder.build(from: request) else {
+            return .failure(.invalidRequest)
+        }
+        
+        do {
+            let (data, response) = try await session.data(for: urlRequest)
+            guard let httpResponse = response as? HTTPURLResponse else {
+                return .failure(.failedConnect)
+            }
+            
+            switch httpResponse.statusCode {
+            case 200...299:
+                break
+            case 401:
+                return .failure(.unauthorized(response: httpResponse, data: data))
+            case 403:
+                return .failure(.forbidden(response: httpResponse, data: data))
+            case 408:
+                return .failure(.timeout(response: httpResponse, data: data))
+            default:
+                return .failure(.badHTTPStatus(response: httpResponse, data: data))
+            }
+            
+            let result = try request.parse(data: data, response: httpResponse)
+            return .success(result)
+        } catch {
+            if (error as NSError).code == NSURLErrorTimedOut {
+                return .failure(.timeout(response: nil, data: nil))
+            }
+            return .failure(.networkError(error))
+        }
     }
 }

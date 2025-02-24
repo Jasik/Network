@@ -30,6 +30,8 @@ public struct HTTPHeaderFields {
     }
     
     public static func defaultHeaders() -> HTTPHeaderFields {
-        return HTTPHeaderFields(fields: [HTTPHeaderField(name: "Content-Type", value: HTTPContentType.applicationJSON.rawValue)])
+        return HTTPHeaderFields(fields: [
+            HTTPHeaderField(name: HTTPHeaderKey.contentType.rawValue, value: HTTPContentType.applicationJSON.rawValue)
+        ])
     }
 }

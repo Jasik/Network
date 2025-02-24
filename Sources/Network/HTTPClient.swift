@@ -28,7 +28,11 @@ public struct URLSessionHTTPClient: HTTPClient {
         
         let task = session.dataTask(with: urlRequest) { data, response, error in
             if let error = error {
-                completion(.failure(.networkError(error)))
+                if (error as NSError).code == NSURLErrorTimedOut {
+                    completion(.failure(.timeout(response: response as? HTTPURLResponse, data: data)))
+                } else {
+                    completion(.failure(.networkError(error)))
+                }
                 return
             }
             
@@ -37,8 +41,20 @@ public struct URLSessionHTTPClient: HTTPClient {
                 return
             }
             
-            guard (200...299).contains(httpResponse.statusCode) else {
-                completion(.failure(.badHTTPStatus(httpResponse.statusCode)))
+            switch httpResponse.statusCode {
+            case 200...299:
+                break
+            case 401:
+                completion(.failure(.unauthorized(response: httpResponse, data: data)))
+                return
+            case 403:
+                completion(.failure(.forbidden(response: httpResponse, data: data)))
+                return
+            case 408:
+                completion(.failure(.timeout(response: httpResponse, data: data)))
+                return
+            default:
+                completion(.failure(.badHTTPStatus(response: httpResponse, data: data)))
                 return
             }
             

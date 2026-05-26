@@ -3,19 +3,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "Network",
+    name: "Networking",
     platforms: [.iOS(.v26), .macOS(.v26), .watchOS(.v26), .tvOS(.v26), .visionOS(.v26)],
     products: [
-        .library(name: "Network", targets: ["Network"]),
+        .library(name: "Networking", targets: ["Networking"]),
     ],
     targets: [
         .target(
-            name: "Network",
+            name: "Networking",
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
         .testTarget(
-            name: "NetworkTests",
-            dependencies: ["Network"],
+            name: "NetworkingTests",
+            dependencies: ["Networking"],
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
     ]

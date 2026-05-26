@@ -7,48 +7,52 @@
 
 import Foundation
 
-public struct EmptyParameters: Encodable {}
+public protocol HTTPRequest: Sendable {
+    associatedtype Response: Decodable & Sendable
+    associatedtype Body: Encodable & Sendable = Never
 
-public protocol HTTPRequest {
-    associatedtype Response: Decodable
-    associatedtype Query: Encodable = EmptyParameters
-    associatedtype Body: Encodable = EmptyParameters
-    
-    var baseURL: URL? { get }
+    var baseURL: URL { get }
     var path: String { get }
     var method: HTTPMethod { get }
-    var headerFields: HTTPHeaderFields { get }
-    var query: Query? { get }
+    var headers: [String: String] { get }
+    var queryItems: [URLQueryItem] { get }
     var body: Body? { get }
-    
+
     var decoder: JSONDecoder { get }
-    
-    func parse(data: Data, response: HTTPURLResponse) throws -> Response
+    var encoder: JSONEncoder { get }
+
+    func decode(_ data: Data, response: HTTPURLResponse) throws -> Response
 }
 
-public extension HTTPRequest where Response: Decodable {
-    
-    var method: HTTPMethod {
-        .get
+public extension HTTPRequest {
+    var method: HTTPMethod { .get }
+
+    var headers: [String: String] {
+        [HTTPHeader.contentType.rawValue: HTTPContentType.json.rawValue]
     }
-    
-    var headerFields: HTTPHeaderFields {
-        .defaultHeaders()
-    }
-    
-    var query: Query? {
-        nil
-    }
-    
-    var body: Body? {
-        nil
-    }
-    
+
+    var queryItems: [URLQueryItem] { [] }
+
     var decoder: JSONDecoder {
-        JSONDecoder()
+        let d = JSONDecoder()
+        d.keyDecodingStrategy = .convertFromSnakeCase
+        d.dateDecodingStrategy = .iso8601
+        return d
     }
-    
-    func parse(data: Data, response: HTTPURLResponse) throws -> Response {
-        return try decoder.decode(Response.self, from: data)
+
+    var encoder: JSONEncoder {
+        let e = JSONEncoder()
+        e.keyEncodingStrategy = .convertToSnakeCase
+        e.dateEncodingStrategy = .iso8601
+        return e
     }
+
+    func decode(_ data: Data, response: HTTPURLResponse) throws -> Response {
+        try decoder.decode(Response.self, from: data)
+    }
+}
+
+// Body == Never означает "у запроса нет тела" — без EmptyParameters-костыля.
+public extension HTTPRequest where Body == Never {
+    var body: Never? { nil }
 }

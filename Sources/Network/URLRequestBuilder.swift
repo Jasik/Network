@@ -7,48 +7,38 @@
 
 import Foundation
 
-private func dictionaryFromEncodable<T: Encodable>(_ value: T) -> [String: Any]? {
-    guard
-        let data = try? JSONEncoder().encode(value),
-        let dictionary = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any]
-    else {
-        return nil
-    }
-    return dictionary
-}
-
-public struct URLRequestBuilder {
-    
+public struct URLRequestBuilder: Sendable {
     public init() {}
-    
-    public func build<Request: HTTPRequest>(from request: Request) -> URLRequest? {
-        
-        guard let baseURL = request.baseURL else {
-            return nil
+
+    public func build<Request: HTTPRequest>(
+        from request: Request
+    ) throws(HTTPError) -> URLRequest {
+        let url = request.baseURL.appendingPathComponent(request.path)
+
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw .invalidURL
         }
-        
-        var urlComponents = URLComponents(
-            url: baseURL.appendingPathComponent(request.path),
-            resolvingAgainstBaseURL: false
-        )
-        
-        if let query = request.query, !(query is EmptyParameters),
-           let queryDict = dictionaryFromEncodable(query) {
-            urlComponents?.queryItems = queryDict.compactMap { (key, value) -> URLQueryItem? in
-                guard let convertible = value as? CustomStringConvertible else { return nil }
-                return URLQueryItem(name: key, value: convertible.description)
+
+        if !request.queryItems.isEmpty {
+            components.queryItems = request.queryItems
+        }
+
+        guard let finalURL = components.url else {
+            throw .invalidURL
+        }
+
+        var urlRequest = URLRequest(url: finalURL)
+        urlRequest.httpMethod = request.method.rawValue
+        urlRequest.allHTTPHeaderFields = request.headers
+
+        if let body = request.body {
+            do {
+                urlRequest.httpBody = try request.encoder.encode(body)
+            } catch {
+                throw .encoding(String(describing: error))
             }
         }
-        
-        guard let url = urlComponents?.url else {
-            return nil
-        }
-        
-        var urlRequest = URLRequest(url: url)
-        urlRequest.allHTTPHeaderFields = request.headerFields.toDictionary()
-        urlRequest.httpMethod = request.method.rawValue
-        urlRequest.setHTTPBody(from: request.body)
-        
+
         return urlRequest
     }
 }

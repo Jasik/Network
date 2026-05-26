@@ -7,44 +7,30 @@
 
 import Foundation
 
-public enum HTTPError: Error {
-    case invalidRequest
-    case failedConnect
-    case networkError(Error)
-    
-    case unauthorized(response: HTTPURLResponse, data: Data?)
-    case forbidden(response: HTTPURLResponse, data: Data?)
-    case timeout(response: HTTPURLResponse?, data: Data?)
-    case badHTTPStatus(response: HTTPURLResponse, data: Data?)
-    
-    case parseError(Error)
-    case serializationError(Error)
+public enum HTTPError: Error, Sendable {
+    case invalidURL
+    case transport(URLError)
+    case unauthorized(Data)
+    case forbidden(Data)
+    case notFound(Data)
+    case timeout(Data?)
+    case http(statusCode: Int, data: Data)
+    case decoding(String)
+    case encoding(String)
 }
 
 extension HTTPError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case .invalidRequest:
-            return "Invalid request."
-        case .failedConnect:
-            return "Failed to connect to the server."
-        case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
-        case .unauthorized(let response, _):
-            return "Unauthorized (HTTP \(response.statusCode))."
-        case .forbidden(let response, _):
-            return "Forbidden (HTTP \(response.statusCode))."
-        case .timeout(let response, _):
-            if let response = response {
-                return "Request timed out (HTTP \(response.statusCode))."
-            }
-            return "Request timed out."
-        case .badHTTPStatus(let response, _):
-            return "Bad HTTP status code: \(response.statusCode)."
-        case .parseError(let error):
-            return "Parse error: \(error.localizedDescription)"
-        case .serializationError(let error):
-            return "Serialization error: \(error.localizedDescription)"
+        case .invalidURL:                 "Invalid URL."
+        case .transport(let e):           "Transport error: \(e.localizedDescription)"
+        case .unauthorized:               "Unauthorized (401)."
+        case .forbidden:                  "Forbidden (403)."
+        case .notFound:                   "Not found (404)."
+        case .timeout:                    "Request timed out."
+        case .http(let code, _):          "HTTP \(code)."
+        case .decoding(let description):  "Decoding failed: \(description)"
+        case .encoding(let description):  "Encoding failed: \(description)"
         }
     }
 }

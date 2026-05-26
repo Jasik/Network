@@ -7,22 +7,30 @@
 
 import Foundation
 
-public enum HTTPMethod: String {
-    case get, post, put, delete
+public enum HTTPMethod: String, Sendable {
+    case get     = "GET"
+    case post    = "POST"
+    case put     = "PUT"
+    case patch   = "PATCH"
+    case delete  = "DELETE"
+    case head    = "HEAD"
+    case options = "OPTIONS"
 }
 
-public enum HTTPContentType: String {
-    case applicationJSON = "application/json"
-    case textHTML = "text/html"
-    case applicationXML = "application/xml"
+public enum HTTPContentType: String, Sendable {
+    case json              = "application/json"
+    case html              = "text/html"
+    case xml               = "application/xml"
     case multipartFormData = "multipart/form-data"
-    case urlEncoded = "application/x-www-form-urlencoded"
-    case textPlain = "text/plain"
+    case urlEncoded        = "application/x-www-form-urlencoded"
+    case plain             = "text/plain"
 }
 
-public enum HTTPHeaderKey: String {
-    case contentType = "Content-Type"
-    case accept = "Accept"
+public enum HTTPHeader: String, Sendable {
+    case contentType    = "Content-Type"
+    case accept         = "Accept"
+    case authorization  = "Authorization"
     case acceptEncoding = "Accept-Encoding"
-    case cacheControl = "Cache-Control"
+    case cacheControl   = "Cache-Control"
+    case userAgent      = "User-Agent"
 }
